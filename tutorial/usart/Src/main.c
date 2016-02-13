@@ -98,7 +98,7 @@ struct rtc_time {
 	uint8_t tm_wday;
 	uint8_t tm_yday;
 	uint8_t tm_isdst;
-} now_t = { 06, 36, 15, 13, 2, 16, 6, 0, 0 };
+} now_t = { 06, 57, 22, 13, 2, 16, 6, 0, 0 };
 
 uint8_t CODE11G[] =
 		{ 0xE7, 0x44, 0xAD, 0xCD, 0x4E, 0xCB, 0xEB, 0x45, 0xEF, 0xCF };
@@ -123,9 +123,9 @@ void vfd_write_display_flag(uint8_t addr, uint8_t flag) {
 void vfd_display() {
 
 	vfd_write_display(0x14, now_t.tm_sec % 10, 0x00);
-	vfd_write_display(0x12, now_t.tm_sec / 10, (halfsecTicks%2) << 4);
+	vfd_write_display(0x12, now_t.tm_sec / 10, 0x10);
 	vfd_write_display(0x10, now_t.tm_min % 10, 0x00);
-	vfd_write_display(0x0E, now_t.tm_min / 10, (halfsecTicks%2) << 4);
+	vfd_write_display(0x0E, now_t.tm_min / 10, 0x10);
 	vfd_write_display(0x0C, now_t.tm_hour % 10, 0x00);
 	vfd_write_display(0x0A, now_t.tm_hour / 10, 0x00);
 	vfd_write_display(0x08, now_t.tm_mday % 10, 0x00);
@@ -229,21 +229,24 @@ int main(void) {
 		HAL_GPIO_WritePin(SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_RESET);
 		HAL_SPI_Transmit(&hspi1, (uint8_t*) (&init_bytes[2]), 1, 1000);
 		HAL_SPI_Transmit(&hspi1, (uint8_t*) (&init_bytes[4]), 1, 1000);
-		//		HAL_SPI_Transmit(&hspi1, (uint8_t*) (&init_bytes[3]), 1, 1000);
 		init_bytes[2]++;
 		HAL_GPIO_WritePin(SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_SET);
 	}
 
-	vfd_display();
-
 	HAL_GPIO_WritePin(SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_RESET);
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) (&init_bytes[2]), 1, 1000);
+	HAL_SPI_Transmit(&hspi1, (uint8_t*) (&init_bytes[5]), 1, 1000);
 	HAL_GPIO_WritePin(SPI_CS_GPIO_Port, SPI_CS_Pin, GPIO_PIN_SET);
+
+//	ds3234_set_time();
+	vfd_display();
 
 	ds3234_set_reg(DS3234_REG_CONTROL, 0x00);
 
-	vfd_write_display_flag(0x03, 0x04);
-	vfd_write_display_flag(0x0F, 0x03);
+//	vfd_write_display_flag(0x03, 0x04);
+//	vfd_write_display_flag(0x0F, 0x03);
+
+	while (1) {
+	};
 
 	/* USER CODE END 2 */
 
